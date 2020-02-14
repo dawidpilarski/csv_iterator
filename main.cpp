@@ -9,15 +9,15 @@ int main(){
 
   std::stringstream ss;
   ss <<
-R"(test,zxcv,wer
-asdf,234,456
-234,345,678
-234,345,890
-123,234,123)";
+R"(test
+asdf
+234
+234
+123)";
 
-  csv::csv_iterator<3> iterator(ss);
-  for(auto&[first, second, last] : iterator){
-    std::cout << first << " | " << second << " | " << last << std::endl;
+  csv::csv_iterator<1> iterator(ss);
+  for(auto&[first] : iterator){
+    std::cout << first << " | " << " | " << std::endl;
   }
 
 }

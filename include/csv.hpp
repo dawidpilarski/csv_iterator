@@ -55,8 +55,15 @@ ArrResult create_result(Iter begin, Iter end, Array&& comma_array, ArrResult&& r
   constexpr std::size_t current_result_idx = result_array_size - N;
   constexpr bool first_iteration = (current_result_idx == 0);
   constexpr bool last_iteration = (current_result_idx == result_array_size-1);
+  constexpr bool file_without_commas = result_array_size == 1;
 
-  if constexpr (first_iteration){
+  if constexpr (first_iteration && file_without_commas){
+    auto* data = ::std::addressof(*begin);
+    auto* data_end = ::std::addressof(*end);
+    result[current_result_idx] = ::std::string_view(data, data_end - data);
+    return result;
+  }
+  else if constexpr (first_iteration){
     auto* data = ::std::addressof(*begin);
     result[current_result_idx] = ::std::string_view(data, comma_array[0] - data);
     return create_result<N-1>(begin, end, comma_array, result);
@@ -79,6 +86,7 @@ ArrResult create_result(Iter begin, Iter end, Array&& comma_array, ArrResult&& r
 
 template<std::size_t rows_, bool check_correctness = false>
 class csv_iterator {
+  static_assert(rows_ >= 1, "csv_iterators needs to operate on stream, that has at least one column");
  public:
   static constexpr std::size_t rows = rows_;
   using iterator_category = ::std::input_iterator_tag;
