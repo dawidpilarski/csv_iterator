@@ -29,6 +29,7 @@
 #include <csv/csv.hpp>
 
 #include <algorithm>
+#include <iterator>
 
 using namespace csv;
 
@@ -135,11 +136,15 @@ R"(not|much|to|say
       swap(it1, it2);
       REQUIRE(it2 == it1cp);
       REQUIRE(it1 == it2cp);
-
-      //todo finish
     }
 
-    //todo finish
+    SECTION("csv_iterator is compliant with iterator_traits"){
+      using it = csv_iterator<3>;
+      using traits = std::iterator_traits<it>;
+
+      //todo finish
+
+    }
   }
 }
 
