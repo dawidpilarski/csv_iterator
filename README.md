@@ -2,7 +2,7 @@
 C++ lightwight, header only csv_iterator class to read csv files. 
 
 
-##Usage
+## Usage
 
 ### Installation
 csv_iterator is a header only library, so installation is as easy as copying the csv/csv.hpp to your project include
