@@ -32,9 +32,14 @@
 #include <array>
 #include <vector>
 #include <algorithm>
+#include <cstddef>
 #include <fstream>
 
 namespace csv {
+
+struct csv_error : std::runtime_error{
+  using std::runtime_error::runtime_error;
+};
 
 namespace details {
 
@@ -116,6 +121,7 @@ class csv_iterator {
   using value_type = ::std::array<::std::string_view, rows>;
   using pointer = const ::std::array<::std::string_view, rows>*;
   using reference = const ::std::array<::std::string_view, rows>&;
+  using difference_type = std::ptrdiff_t;
 
   csv_iterator() noexcept : stream_(nullptr) {}
 
@@ -150,7 +156,7 @@ class csv_iterator {
     if constexpr (check_correctness) {
       auto comma_positions = details::find_all(result_.line_.begin(), result_.line_.end(), predicate);
       if(comma_positions.size() != rows - 1){
-        throw ::std::runtime_error("csv file contains wrong number of rows.");
+        throw csv_error("csv file contains wrong number of rows.");
       }
 
       auto* comma_positions_array = comma_positions.data();

@@ -33,6 +33,9 @@
 
 using namespace csv;
 
+template <typename T>
+struct check;
+
 TEST_CASE("csv_iterator meets input iterator criteria"){
   std::stringstream ss;
   ss <<
@@ -57,38 +60,38 @@ R"(not|much|to|say
 
   SECTION("csv_iterator meets EqualityComparable"){
     SECTION("self comparisons shall always return true"){
-      REQUIRE(it1 == it1);
-      REQUIRE(it2 == it2);
-      REQUIRE(end_it == end_it);
+      CHECK(it1 == it1);
+      CHECK(it2 == it2);
+      CHECK(end_it == end_it);
 
-      REQUIRE(!(it1 != it1));
-      REQUIRE(!(it2 != it2));
-      REQUIRE(!(end_it != end_it));
+      CHECK(!(it1 != it1));
+      CHECK(!(it2 != it2));
+      CHECK(!(end_it != end_it));
     }
 
     SECTION("iterators to different streams shall not compare equal"){
-      REQUIRE(it1 != it2);
-      REQUIRE(it2 != it1);
-      REQUIRE(it1 != end_it);
-      REQUIRE(end_it != it1);
-      REQUIRE(it2 != end_it);
-      REQUIRE(end_it != it2);
+      CHECK(it1 != it2);
+      CHECK(it2 != it1);
+      CHECK(it1 != end_it);
+      CHECK(end_it != it1);
+      CHECK(it2 != end_it);
+      CHECK(end_it != it2);
 
-      REQUIRE(!(it1 == it2));
-      REQUIRE(!(it2 == it1));
-      REQUIRE(!(it1 == end_it));
-      REQUIRE(!(end_it == it1));
-      REQUIRE(!(it2 == end_it));
-      REQUIRE(!(end_it == it2));
+      CHECK(!(it1 == it2));
+      CHECK(!(it2 == it1));
+      CHECK(!(it1 == end_it));
+      CHECK(!(end_it == it1));
+      CHECK(!(it2 == end_it));
+      CHECK(!(end_it == it2));
     }
 
     SECTION("Equality should be transitive"){
       csv_iterator<4> end_it2;
       csv_iterator<4> end_it3;
 
-      REQUIRE(end_it == end_it2);
-      REQUIRE(end_it == end_it3);
-      REQUIRE(end_it2 == end_it3);
+      CHECK(end_it == end_it2);
+      CHECK(end_it == end_it3);
+      CHECK(end_it2 == end_it3);
     }
   }
 
@@ -96,13 +99,13 @@ R"(not|much|to|say
     SECTION("csv_iterator meets CopyConstructible"){
       SECTION("csv_iterator meets MoveConstructible"){
         csv_iterator<4> lhs = std::move(it1);
-        REQUIRE(lhs != end_it);
+        CHECK(lhs != end_it);
         // crash tests
         *lhs;
         ++lhs;
 
         csv_iterator<4> lhs2(std::move(it2));
-        REQUIRE(lhs != end_it);
+        CHECK(lhs != end_it);
         //crash tests
         *lhs2;
         ++lhs2;
@@ -111,22 +114,29 @@ R"(not|much|to|say
       }
 
       csv_iterator<4> cpy1 = static_cast<const csv_iterator<4>&>(it1);
-      REQUIRE(cpy1 == it1);
-      REQUIRE(cpy1 != end_it);
+      CHECK(cpy1 == it1);
+      CHECK(cpy1 != end_it);
 
       csv_iterator<4> cpy2(static_cast<const csv_iterator<4>&>(it2));
-      REQUIRE(cpy2 == it2);
-      REQUIRE(cpy2 != end_it);
+      CHECK(cpy2 == it2);
+      CHECK(cpy2 != end_it);
     }
 
     SECTION("csv_iterator meets CopyAssignable"){
-      SECTION("csv_iterator meets MoveAssignable"){
+      decltype(it1) itm;
 
+      SECTION("csv_iterator meets MoveAssignable"){
+        decltype(it1) it1cpy = it1;
+        itm  = {std::move(it1)};
+        CHECK(it1cpy == itm);
       }
+
+      itm = it2;
+      CHECK(itm == it2);
     }
 
     SECTION("csv_iterator meets Destructible"){
-      REQUIRE(std::is_nothrow_destructible_v<csv_iterator<3>>);
+      CHECK(std::is_nothrow_destructible_v<csv_iterator<3>>);
     }
 
     SECTION("csv_iterator meets Swappable"){
@@ -134,21 +144,31 @@ R"(not|much|to|say
       auto it1cp = it1;
       auto it2cp = it2;
       swap(it1, it2);
-      REQUIRE(it2 == it1cp);
-      REQUIRE(it1 == it2cp);
+      CHECK(it2 == it1cp);
+      CHECK(it1 == it2cp);
     }
 
     SECTION("csv_iterator is compliant with iterator_traits"){
       using it = csv_iterator<3>;
       using traits = std::iterator_traits<it>;
 
-      //todo finish
+      CHECK(std::is_same_v<traits::value_type, std::array<std::string_view, 3>>);
+      CHECK(std::is_same_v<traits::pointer, std::add_pointer_t<std::add_const_t<std::array<std::string_view, 3>>>>);
+      CHECK(std::is_same_v<traits::reference, std::add_lvalue_reference_t<std::add_const_t<std::array<std::string_view, 3>>>>);
+      CHECK(std::is_same_v<traits::difference_type, std::ptrdiff_t>);
+      CHECK(std::is_same_v<traits::iterator_category, std::input_iterator_tag>);
+    }
 
+    SECTION("dereference and increment operations"){
+      CHECK(std::is_same_v<decltype(*it1), decltype(it1)::reference>);
+      CHECK(std::is_same_v<decltype(++it1), decltype((it1))>);
     }
   }
 }
 
 TEST_CASE("Compatibility with standard algorithms test"){
+
+
   SECTION("std::distance test"){
 
   }
@@ -156,4 +176,8 @@ TEST_CASE("Compatibility with standard algorithms test"){
   SECTION("std::next test"){
 
   }
+}
+
+TEST_CASE("Parsing stream errors"){
+
 }
