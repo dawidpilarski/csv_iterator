@@ -18,6 +18,8 @@ csv_iterator also operates in two modes. One assumes, that you can guarantee, th
 correct, and second one doesn't make such assumption, but additional checks performed on the csv content makes
 the iterator slower. The "checkful" mode is set by the second non type template argument of the csv_iterator template.
 
+Iterator fulfills `LegacyInputIterator` concept.
+
 #### creation and basic usage
 
 ```c++
@@ -38,6 +40,6 @@ inside the csv_iterator type.
 
 Default delimiter for the iterator is a comma `,`, but custom delimiters can be provided.
 
-#License
+# License
 
 BSD 3-Clause License - details in LICENSE file
