@@ -131,10 +131,39 @@ class csv_iterator {
     operator++();
   }
 
-  csv_iterator(const csv_iterator&) = default;
-  csv_iterator(csv_iterator&&) noexcept = default;
-  csv_iterator& operator=(const csv_iterator&) = default;
-  csv_iterator& operator=(csv_iterator&&) = default;
+  csv_iterator(const csv_iterator& rhs) :
+  delimiter_(rhs.delimiter_),
+  stream_(rhs.stream_),
+  result_(rhs.result_){
+    parse_line(); // todo optimize
+  }
+
+  csv_iterator(csv_iterator&& rhs) noexcept :
+  delimiter_(rhs.delimiter_),
+  stream_(rhs.stream_),
+  result_(std::move(rhs.result_))
+  {
+    parse_line(); // todo optimize
+  }
+
+  csv_iterator& operator=(const csv_iterator& rhs){
+    delimiter_ = rhs.delimiter_;
+    stream_ = rhs.stream_;
+    result_ = rhs.result_;
+    parse_line(); // update string_views in cached result
+
+    return *this;
+  }
+
+  csv_iterator& operator=(csv_iterator&& rhs){
+    delimiter_ = rhs.delimiter_;
+    stream_ = rhs.stream_;
+    result_ = std::move(rhs.result_);
+    parse_line(); // update string_views in cached result
+
+    return *this;
+  }
+
   ~csv_iterator() = default;
 
   reference operator*() const {
@@ -152,6 +181,19 @@ class csv_iterator {
       return *this;
     }
 
+    parse_line();
+    return *this;
+  }
+
+  csv_iterator operator++(int) {
+    csv_iterator previous = *this;
+    ++(*this);
+    return std::move(previous);
+  }
+
+ private:
+
+  void parse_line(){
     auto predicate = [this](char letter){return letter == delimiter_;};
     if constexpr (check_correctness) {
       auto comma_positions = details::find_all(result_.line_.begin(), result_.line_.end(), predicate);
@@ -163,21 +205,12 @@ class csv_iterator {
       result_.result = details::create_result<rows>(result_.line_.begin(), result_.line_.end(), comma_positions_array);
     } else {
       auto comma_positions = details::find_n<rows-1>(result_.line_.begin(),
-          result_.line_.end(),
-          predicate);
+                                                     result_.line_.end(),
+                                                     predicate);
       result_.result = details::create_result<rows>(result_.line_.begin(), result_.line_.end(), comma_positions);
     }
-
-    return *this;
   }
 
-  csv_iterator operator++(int) {
-    csv_iterator previous = *this;
-    ++(*this);
-    return std::move(previous);
-  }
-
- private:
   struct cached_result {
     ::std::string line_;
     ::std::array<::std::string_view, rows> result;

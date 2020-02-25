@@ -167,14 +167,32 @@ R"(not|much|to|say
 }
 
 TEST_CASE("Compatibility with standard algorithms test"){
-
-
+  std::stringstream ss;
   SECTION("std::distance test"){
+    ss <<
+R"(not|much|to|say
+1|2|3|4
+4|3|2|1
+)";
 
+    csv_iterator<4> it_begin(ss, '|');
+    csv_iterator<4> it_end;
+    CHECK(std::distance(it_begin, it_end) == 3);
   }
 
   SECTION("std::next test"){
-
+    ss <<
+R"(not|much|to|say
+1|2|3|4
+4|3|2|1
+)";
+    csv_iterator<4> it_begin(ss, '|');
+    using sv = std::string_view;
+    auto result = *it_begin == std::array{sv{"not"}, sv{"much"}, sv{"to"}, sv{"say"}};
+    CHECK(result == true);
+    it_begin = std::next(it_begin, 1);
+    result = *it_begin == std::array{sv{"1"}, sv{"2"}, sv{"3"}, sv{"4"}};
+    CHECK(result == true);
   }
 }
 
